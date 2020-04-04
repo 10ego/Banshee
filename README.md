@@ -4,7 +4,8 @@ Proxy hop to be used with requests.
 
 Example:
 
-```from banshee import Banshee
+```
+from banshee import Banshee
 import requests
 
 url = "https://some.url""
