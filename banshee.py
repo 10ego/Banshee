@@ -1,37 +1,54 @@
 import requests
 import sys
-import rand
-class Banshee()
-	def __init__(self):
-		self.preurl = "https://gimmeproxy.com/api/getProxy?anonymityLevel=1&user-agent=true"
-		self.hopurl = "https://www.proxy-list.download/api/v1/get?type=http&anon=elite&country=US" 
-		self.session = requests.session()
+from bs4 import BeautifulSoup as BS
+import pandas as pd
 
-	def init_proxy(self):
-		pr = self.session.get(self.preurl)
-		proxy = {}
-		if pr.status_code == 200:
-			proxy['http'] = "{}://{}:{}".format(pr.json()['protocol'], pr.json()['ip'], pr.json()['port'])
-			proxy['https'] = "{}://{}:{}".format(pr.json()['protocol'], pr.json()['ip'], pr.json()['port'])
-	#		print("initializing proxy retrieved") 
-		else:
-			self.init_proxy()
-		self.layer1 = proxy
+class Banshee():
+    def __init__(self):
+        proxy_feed = "https://free-proxy-list.net/anonymous-proxy.html"
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0"
+        r = requests.get(proxy_feed, headers={"User-Agent":user_agent})
 
-	def get_mask(self, init_proxy = self.layer1):
-		pr = requests.get(self.hopurl, proxies = init_proxy)
-		proxy = {}
-		if pr.status_code == 200:
-			self.hop_list = pr.text.splitlines()
+        if r.status_code == 200:
+            raw_proxy = r.text
+            soup_proxy = BS(raw_proxy)
+            self.proxy_list = soup_proxy.find('table', {"id":"proxylisttable"})
+        else:
+            raise HTTPError("Status code:"+r.status_code)
+        self.proxyCounter = 0
+        self.tablebuilt = False
 
-	def veil(self):
-		proxy = {}
-		for i in self.hop_list:
-			if self.session.get(self.hop_list[i]).status_code==200:
-				proxy['http'] = 'http://{}'.format(self.hop_list[i])
-				proxy['https'] = 'https://{}'.format(self.hop_list[i])
-				break
-			else:
-				proxy = self.layer1
-		return proxy
+    def tableDataText(self, table):
+        rows = []
+        trs = table.find_all('tr')
+        headerrow = [td.get_text(strip=True) for td in trs[0].find_all('th')]
+        if headerrow:
+                trs = trs[1:]
 
+        for tr in trs:
+            rows.append([td.get_text(strip=True) for td in tr.find_all('td')])
+        return headerrow, rows
+
+    def buildTable(self):
+        d = {}
+        header, table = tableDataText(self.proxy_list)
+        d['header'] = header
+        d['data'] = table
+        self.full_proxy_list = d['data']
+        self.maxProxy = len(self.full_proxy_list)
+        self.tablebuilt = True
+        
+    def nextProxy(self):
+        if not self.tablebuilt:
+            self.buildTable()
+
+        if self.proxyCounter <= self.maxProxy:
+            proxy_data = self.full_proxy_list[self.proxyCounter]
+            if proxy_data[6] == 'yes':
+                https = proxy_data[0] + ":" + proxy_data[1]
+                self.proxyCounter+=1
+                print(https)
+                return {"https":https}
+            else:
+                self.proxyCounter+=1
+                nextProxy()
