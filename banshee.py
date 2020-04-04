@@ -49,4 +49,4 @@ class Banshee():
                 return {"https":https}
             else:
                 self.proxyCounter+=1
-                nextProxy()
+                self.nextProxy()
