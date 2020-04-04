@@ -1,7 +1,5 @@
 import requests
-import sys
 from bs4 import BeautifulSoup as BS
-import pandas as pd
 
 class Banshee():
     def __init__(self):
