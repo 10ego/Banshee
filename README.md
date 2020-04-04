@@ -8,7 +8,7 @@ Example:
 from banshee import Banshee
 import requests
 
-url = "https://some.url""
+url = "https://some.url"
 
 banshee = Banshee()
 proxy = banshee.nextProxy()

@@ -9,7 +9,7 @@ class Banshee():
 
         if r.status_code == 200:
             raw_proxy = r.text
-            soup_proxy = BS(raw_proxy)
+            soup_proxy = BS(raw_proxy, 'html.parser')
             self.proxy_list = soup_proxy.find('table', {"id":"proxylisttable"})
         else:
             raise HTTPError("Status code:"+r.status_code)
@@ -29,7 +29,7 @@ class Banshee():
 
     def buildTable(self):
         d = {}
-        header, table = tableDataText(self.proxy_list)
+        header, table = self.tableDataText(self.proxy_list)
         d['header'] = header
         d['data'] = table
         self.full_proxy_list = d['data']
