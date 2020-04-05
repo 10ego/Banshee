@@ -11,6 +11,7 @@ class Banshee():
             raw_proxy = r.text
             soup_proxy = BS(raw_proxy, 'html.parser')
             self.proxy_list = soup_proxy.find('table', {"id":"proxylisttable"})
+            print("Proxy list refreshed")
         else:
             raise HTTPError("Status code:"+r.status_code)
         self.proxyCounter = 0
